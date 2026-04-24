@@ -5,6 +5,10 @@ import { startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import {
+  EvidenceUpload,
+  type EvidenceFile,
+} from "@/components/case-intake/evidence-upload";
 
 type ApiPayload<T> = {
   ok: boolean;
@@ -22,9 +26,62 @@ async function readApiPayload<T>(response: Response, fallbackMessage: string): P
   return payload.data;
 }
 
+type PreparedUpload = {
+  storagePath: string;
+  signedUploadUrl: string;
+  uploadToken: string;
+};
+
+async function attachEvidenceFile(publicId: string, file: File): Promise<void> {
+  const prepareResponse = await fetch(`/api/cases/${publicId}/evidence`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "screenshot",
+      fileName: file.name,
+      contentType: file.type,
+      fileSize: file.size,
+    }),
+  });
+  const prepared = await readApiPayload<PreparedUpload>(
+    prepareResponse,
+    `No pudimos preparar ${file.name}.`,
+  );
+
+  const uploadResponse = await fetch(prepared.signedUploadUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type,
+      "x-upsert": "true",
+    },
+    body: file,
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error(`Falló la subida de ${file.name}.`);
+  }
+
+  const attachResponse = await fetch(`/api/cases/${publicId}/evidence`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "screenshot",
+      fileName: file.name,
+      contentType: file.type,
+      fileSize: file.size,
+      storagePath: prepared.storagePath,
+    }),
+  });
+  await readApiPayload<{ evidenceId: string }>(
+    attachResponse,
+    `No pudimos adjuntar ${file.name}.`,
+  );
+}
+
 export function CaseIntakeForm() {
   const router = useRouter();
   const [narrative, setNarrative] = useState("");
+  const [files, setFiles] = useState<EvidenceFile[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,71 +92,95 @@ export function CaseIntakeForm() {
     setStatusMessage(null);
 
     const trimmedNarrative = narrative.trim();
-    if (!trimmedNarrative) {
-      setError("Pegá el mensaje o contá brevemente qué pasó para poder revisar el caso.");
+    if (!trimmedNarrative && files.length === 0) {
+      setError("Pegá el mensaje, contá brevemente qué pasó o adjuntá una captura.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      setStatusMessage("Estamos revisando señales. Puede tardar unos segundos.");
+      setStatusMessage(
+        files.length
+          ? "Preparando tu caso y subiendo capturas…"
+          : "Preparando tu caso…",
+      );
       const createResponse = await fetch("/api/cases", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          narrative_text: trimmedNarrative,
+          narrative_text: trimmedNarrative || undefined,
           privacy_mode: "minimal_retention",
         }),
       });
-      const created = await readApiPayload<{ publicId: string }>(createResponse, "No pudimos iniciar la revisión.");
+      const created = await readApiPayload<{ publicId: string }>(
+        createResponse,
+        "No pudimos iniciar la revisión.",
+      );
 
+      if (files.length) {
+        for (const [index, item] of files.entries()) {
+          setStatusMessage(
+            `Subiendo captura ${index + 1} de ${files.length}…`,
+          );
+          await attachEvidenceFile(created.publicId, item.file);
+        }
+      }
+
+      setStatusMessage("Estamos revisando señales…");
       startTransition(() => {
         router.push(`/caso/${created.publicId}`);
       });
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "No pudimos iniciar la revisión.");
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "No pudimos iniciar la revisión.",
+      );
       setStatusMessage(null);
-    } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <form className="space-y-5" onSubmit={submit}>
-      <div className="space-y-3">
-        <label className="block text-base font-semibold text-[var(--ink)]" htmlFor="narrative_text">
-          Mensaje o situación sospechosa
-        </label>
+    <form className="space-y-4" onSubmit={submit} noValidate>
+      <div className="rounded-xl border border-[var(--line-strong)] bg-[var(--surface-raised)] p-3 focus-within:border-[var(--brand)] focus-within:ring-4 focus-within:ring-[var(--focus-ring)]">
         <textarea
           id="narrative_text"
-          aria-describedby="safety-note"
-          rows={7}
+          aria-label="Mensaje o situación sospechosa"
+          rows={6}
           value={narrative}
           onChange={(event) => setNarrative(event.target.value)}
-          className="min-h-48 w-full resize-y rounded-lg border border-[var(--line-strong)] bg-[var(--surface-raised)] px-4 py-4 text-lg leading-8 text-[var(--ink)] outline-none transition-colors placeholder:text-[var(--muted-soft)] focus:border-[var(--action)] focus:ring-4 focus:ring-[var(--focus-ring)] sm:min-h-64"
-          placeholder="Ejemplo: “Me escribieron diciendo que eran del banco y me pidieron un código para desbloquear la cuenta...”"
+          disabled={isSubmitting}
+          className="block min-h-40 w-full resize-y border-0 bg-transparent px-2 py-2 text-lg leading-8 text-[var(--ink)] outline-none placeholder:text-[var(--muted-soft)]"
+          placeholder="Pegá acá el mensaje sospechoso o contá brevemente qué pasó…"
         />
-        <p id="safety-note" className="rounded-lg border border-[var(--caution-line)] bg-[var(--caution-bg)] px-4 py-3 text-sm leading-6 text-[var(--caution-text)]">
-          No pegues claves, códigos de verificación, DNI completo ni datos de tarjeta.
-        </p>
+        <div className="mt-2 border-t border-[var(--line)] px-2 pt-3">
+          <EvidenceUpload
+            files={files}
+            onChange={setFiles}
+            disabled={isSubmitting}
+          />
+        </div>
       </div>
 
-      <div aria-live="polite" className="min-h-6">
-        {statusMessage ? <p className="text-sm font-medium text-[var(--muted)]">{statusMessage}</p> : null}
-        {error ? <p className="text-sm font-semibold text-[var(--danger)]">{error}</p> : null}
+      <p className="flex items-start gap-2 text-sm leading-6 text-[var(--caution-text)]">
+        <span aria-hidden="true" className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--caution-line)]" />
+        <span>No pegues claves, códigos de verificación, DNI completo ni datos de tarjeta.</span>
+      </p>
+
+      <div aria-live="polite" className="min-h-5 text-sm">
+        {statusMessage ? (
+          <p className="font-medium text-[var(--muted)]">{statusMessage}</p>
+        ) : null}
+        {error ? (
+          <p className="font-semibold text-[var(--danger)]">{error}</p>
+        ) : null}
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Button type="submit" disabled={isSubmitting} className="w-full px-6 sm:w-auto">
-          {isSubmitting ? "Revisando..." : "Revisar riesgo"}
-        </Button>
-        <p className="text-sm leading-6 text-[var(--muted)]">
-          Detectamos links, teléfonos o usuarios dentro del texto. No tenés que separarlos.
-        </p>
-      </div>
+      <Button type="submit" disabled={isSubmitting} className="w-full">
+        {isSubmitting ? "Revisando…" : "Revisar riesgo"}
+      </Button>
     </form>
   );
 }

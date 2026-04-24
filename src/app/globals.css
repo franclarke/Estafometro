@@ -11,13 +11,19 @@
   --line-strong: #bcae9d;
   --action: #173c32;
   --action-hover: #225145;
+  --brand: #0c9488;
+  --brand-ink: #1b2e3c;
   --teal-700: var(--action);
   --teal-600: var(--action-hover);
   --amber-700: #b45309;
   --sand: #f4dfbd;
-  --success: #1f6f4a;
+  --success: #2f8457;
   --warning: #b45309;
   --danger: #b42318;
+  --risk-low: #2f8457;
+  --risk-medium: #d09b4b;
+  --risk-high: #c45b12;
+  --risk-very-high: #b42318;
   --caution-bg: #fff6e5;
   --caution-line: #e3c179;
   --caution-text: #6b2f18;
@@ -80,4 +86,31 @@ select {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+@keyframes needle-sweep {
+  0%, 100% { transform: rotate(-78deg); }
+  50% { transform: rotate(78deg); }
+}
+
+@keyframes needle-reveal {
+  from { transform: rotate(var(--needle-start, -90deg)); }
+  to { transform: rotate(var(--needle-end, 0deg)); }
+}
+
+@keyframes needle-tick {
+  0% { transform: rotate(var(--needle-end, 0deg)); }
+  40% { transform: rotate(calc(var(--needle-end, 0deg) + 5deg)); }
+  70% { transform: rotate(calc(var(--needle-end, 0deg) - 3deg)); }
+  100% { transform: rotate(var(--needle-end, 0deg)); }
+}
+
+@keyframes arc-draw {
+  from { stroke-dashoffset: var(--arc-length, 220); }
+  to { stroke-dashoffset: var(--arc-remaining, 0); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }

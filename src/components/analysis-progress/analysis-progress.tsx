@@ -3,11 +3,31 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { Logo } from "@/components/brand/logo";
+import { RiskGauge } from "@/components/result/risk-gauge";
 import { Button } from "@/components/ui/button";
+
+const STEP_MESSAGES = [
+  "Preparando tu caso…",
+  "Leyendo capturas y extrayendo texto…",
+  "Revisando señales de riesgo…",
+  "Cruzando con patrones conocidos…",
+  "Armando la orientación…",
+];
 
 export function AnalysisProgress({ publicId }: { publicId: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [stepIndex, setStepIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStepIndex((current) =>
+        current < STEP_MESSAGES.length - 1 ? current + 1 : current,
+      );
+    }, 2200);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +51,11 @@ export function AnalysisProgress({ publicId }: { publicId: string }) {
         }
       } catch (analysisError) {
         if (!cancelled) {
-          setError(analysisError instanceof Error ? analysisError.message : "El análisis falló.");
+          setError(
+            analysisError instanceof Error
+              ? analysisError.message
+              : "El análisis falló.",
+          );
         }
       }
     }
@@ -44,23 +68,39 @@ export function AnalysisProgress({ publicId }: { publicId: string }) {
   }, [publicId, router]);
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-4 rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] p-5 sm:p-6" aria-live="polite">
-        <p className="text-sm font-semibold uppercase text-[var(--action)]">Estafómetro</p>
-        <h1 className="text-3xl font-semibold leading-tight text-[var(--ink)]">Estamos revisando señales.</h1>
-        <p className="text-base leading-7 text-[var(--muted)]">Puede tardar unos segundos. Estamos preparando una orientación simple y prudente.</p>
-        <div className="h-2 overflow-hidden rounded-lg bg-[var(--line)]">
-          <div className="h-full w-2/3 animate-pulse rounded-lg bg-[var(--action)]" />
+    <div className="flex min-h-dvh flex-col px-4 py-6 sm:px-6">
+      <header className="mb-6">
+        <Logo />
+      </header>
+
+      <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
+        <RiskGauge variant="scanning" className="animate-[fade-up_400ms_ease-out]" />
+
+        <div className="flex flex-col items-center gap-2" aria-live="polite">
+          <p className="text-xl font-semibold leading-tight text-[var(--ink)]">
+            Estamos revisando tu caso
+          </p>
+          <p className="min-h-6 text-sm leading-6 text-[var(--muted)]">
+            {STEP_MESSAGES[stepIndex]}
+          </p>
         </div>
+
+        {error ? (
+          <div
+            role="alert"
+            className="w-full max-w-md space-y-3 rounded-lg border border-[#d88a83] bg-[#fff1ef] p-4 text-sm leading-6 text-[var(--danger)]"
+          >
+            <p>{error}</p>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => router.refresh()}
+            >
+              Reintentar
+            </Button>
+          </div>
+        ) : null}
       </div>
-      {error ? (
-        <div className="space-y-3 rounded-lg border border-[#d88a83] bg-[#fff1ef] p-5 text-sm leading-6 text-[var(--danger)]" aria-live="assertive">
-          <p>{error}</p>
-          <Button type="button" variant="secondary" onClick={() => router.refresh()}>
-            Reintentar
-          </Button>
-        </div>
-      ) : null}
     </div>
   );
 }

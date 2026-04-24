@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Greenfield. The repo currently contains **design documentation only** (in Spanish, under `docs/`) and no source code. Any implementation work starts from scratch against the specs below. Do not assume package.json, migrations, or module scaffolding exist — check before referencing them.
+MVP **in progress**. Next.js app + Supabase migrations + Gemini extraction + OCR are wired end-to-end; the 8-stage pipeline runs synchronously inside `/api/cases/[id]/analyze`. Screenshots are uploadable via signed-URL flow and go through Tesseract OCR in preprocessing. The UI, `RiskGauge`, and `EvidenceUpload` UX were rebuilt in April 2026. See `AGENTS.md` for the live status; the specs under `docs/` are still the contract.
 
 ## What this product is
 
@@ -52,4 +52,10 @@ Product copy, docs, and user-facing strings are in **Spanish (es-AR)**. Code ide
 
 ## Commands
 
-None yet. Once Fase 0 lands, add the real `npm run dev` / migration / lint commands here.
+- `npm run dev` — Next dev server
+- `npm run build` / `npm start` — production build & start
+- `npm run lint` — ESLint
+- `npm run typecheck` — `tsc --noEmit`
+- `npm run test` / `npm run test:watch` — Vitest
+- `npm run test:e2e` — Playwright
+- `npm run patterns:validate` / `patterns:sync` — validate YAML library and sync to Supabase

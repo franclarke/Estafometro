@@ -8,8 +8,8 @@ export default async function CaseProgressPage({
   const { publicId } = await params;
 
   return (
-    <main className="min-h-dvh bg-[var(--surface)] px-4 py-5 text-[var(--ink)] sm:px-6">
-      <div className="mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full max-w-[640px] flex-col justify-center">
+    <main className="min-h-dvh bg-[var(--surface)] text-[var(--ink)]">
+      <div className="mx-auto w-full max-w-[640px]">
         <AnalysisProgress publicId={publicId} />
       </div>
     </main>
