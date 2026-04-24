@@ -1,0 +1,27 @@
+code: family_money_new_number_relative
+name: Familiar con número nuevo pide dinero
+category: family_money
+summary: Una persona dice ser un familiar, afirma que cambió de número y pide una transferencia urgente.
+core_signals:
+  - identity_change
+  - new_number_claim
+  - transfer_request
+high_weight_signals:
+  - urgent_transfer
+  - emotional_pressure
+  - family_impersonation
+hard_rules:
+  - when:
+      - new_number_claim
+      - transfer_request
+    floor: high
+counter_signals:
+  - verified_identity_signal
+variant_examples:
+  - "Hola ma, cambié de número. Necesito que me transfieras urgente."
+  - "Soy tu hijo, perdí el teléfono y no puedo entrar al banco."
+recommended_actions:
+  - No transfieras todavía.
+  - Verificá por otro canal independiente que realmente sea tu familiar.
+  - Cortá la conversación si siguen apurándote.
+minimum_risk_level: high

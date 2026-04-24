@@ -1,0 +1,32 @@
+code: authority_impersonation_arrest_threat_bribery
+name: Falsa autoridad con amenaza y pedido de pago
+category: authority_extortion
+summary: Alguien dice ser autoridad, amenaza con arresto o allanamiento y pide dinero para resolverlo.
+core_signals:
+  - behavior_artificial_time_pressure_high
+  - behavior_justification_nonsensical
+  - authority_impersonation
+  - threatens_arrest
+high_weight_signals:
+  - behavior_combo_nonsensical_transaction_justification
+  - bribery_request
+  - transfer_request
+  - urgency_language
+hard_rules:
+  - when:
+      - authority_impersonation
+      - bribery_request
+    floor: very_high
+  - when:
+      - threatens_arrest
+      - transfer_request
+    floor: very_high
+counter_signals: []
+variant_examples:
+  - "Hay una causa en curso y necesitás transferir ahora para evitar el allanamiento."
+  - "Soy de la fiscalía, arreglemos esto antes de que avance."
+recommended_actions:
+  - No pagues ni transfieras.
+  - Cortá la llamada y verificá con la entidad real por un canal oficial.
+  - Conservá la evidencia y no negocies bajo presión.
+minimum_risk_level: very_high

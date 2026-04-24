@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Estafometro Fraud Pattern",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": { "type": "string" },
+    "name": { "type": "string" },
+    "category": { "type": "string" },
+    "summary": { "type": "string" },
+    "core_signals": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "high_weight_signals": { "type": "array", "items": { "type": "string" } },
+    "hard_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "when": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "floor": { "type": "string", "enum": ["low", "medium", "high", "very_high"] }
+        },
+        "required": ["when", "floor"]
+      }
+    },
+    "counter_signals": { "type": "array", "items": { "type": "string" } },
+    "variant_examples": { "type": "array", "items": { "type": "string" } },
+    "recommended_actions": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "minimum_risk_level": { "type": "string", "enum": ["low", "medium", "high", "very_high"] }
+  },
+  "required": [
+    "code",
+    "name",
+    "category",
+    "summary",
+    "core_signals",
+    "high_weight_signals",
+    "hard_rules",
+    "counter_signals",
+    "variant_examples",
+    "recommended_actions",
+    "minimum_risk_level"
+  ]
+}

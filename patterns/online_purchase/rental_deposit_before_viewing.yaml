@@ -1,0 +1,35 @@
+code: online_purchase_rental_deposit_before_viewing
+name: Reserva o alquiler con anticipo antes de ver
+category: online_purchase
+summary: Ofrecen un alquiler, reserva o propiedad, pero piden una sena o anticipo antes de mostrarla, verla o verificar que exista.
+core_signals:
+  - behavior_asymmetric_risk_high
+  - behavior_standard_process_bypass_high
+  - behavior_combo_asymmetric_risk_process_bypass
+high_weight_signals:
+  - advance_payment_request
+  - deposit_request
+  - refuses_in_person_exchange
+  - behavior_justification_nonsensical
+  - behavior_trust_manipulation_high
+  - scarcity_pressure
+hard_rules:
+  - when:
+      - behavior_combo_asymmetric_risk_process_bypass
+    floor: high
+  - when:
+      - advance_payment_request
+      - refuses_in_person_exchange
+    floor: very_high
+counter_signals:
+  - verified_identity_signal
+  - official_platform_interaction
+variant_examples:
+  - "Te la reservo si transferis hoy la sena y despues coordinamos la visita."
+  - "Hay mucha demanda, primero el anticipo y luego te muestro el departamento."
+  - "No puedo llevarte a verlo sin reserva previa."
+recommended_actions:
+  - No pagues una reserva o sena antes de ver y verificar el inmueble o servicio.
+  - Exigi validar identidad, direccion y legitimidad por un canal independiente.
+  - Si te bloquean la visita o meten apuro para cobrar, corta la operacion.
+minimum_risk_level: high

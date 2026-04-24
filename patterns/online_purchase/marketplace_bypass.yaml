@@ -1,0 +1,31 @@
+code: online_purchase_marketplace_bypass
+name: Compra online desviada fuera de plataforma
+category: online_purchase
+summary: La operación empieza en una plataforma y el vendedor intenta cerrarla por WhatsApp, Instagram u otro canal externo.
+core_signals:
+  - behavior_standard_process_bypass_medium
+  - behavior_justification_weak
+  - behavior_combo_nonsensical_transaction_justification
+high_weight_signals:
+  - behavior_standard_process_bypass_high
+  - behavior_asymmetric_risk_medium
+  - transfer_request
+  - off_platform_payment
+  - platform_bypass
+  - price_too_good
+hard_rules:
+  - when:
+      - behavior_standard_process_bypass_high
+      - behavior_asymmetric_risk_medium
+    floor: high
+counter_signals:
+  - payment_on_delivery_available
+  - official_platform_interaction
+variant_examples:
+  - "Te dejo más barato si me pagás por transferencia y seguimos por WhatsApp."
+  - "La publicación sigue en la plataforma, pero la reserva es por fuera."
+recommended_actions:
+  - No pagues por fuera de la plataforma.
+  - Verificá si la operación puede hacerse dentro del canal original.
+  - Guardá capturas de la publicación y del chat.
+minimum_risk_level: high

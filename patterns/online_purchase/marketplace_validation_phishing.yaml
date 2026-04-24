@@ -1,0 +1,34 @@
+code: online_purchase_marketplace_validation_phishing
+name: Validacion falsa de compra o venta en marketplace
+category: online_purchase
+summary: En una compra o venta por marketplace, la otra parte pide un codigo, link o validacion fuera de la plataforma con la excusa de confirmar la operacion.
+core_signals:
+  - marketplace_p2p_context
+  - behavior_credential_phishing_disguise_high
+  - behavior_combo_disguised_credential_theft
+high_weight_signals:
+  - asks_for_otp
+  - asks_for_credentials
+  - suspicious_link
+  - platform_bypass
+  - fake_verification_interface
+  - behavior_justification_nonsensical
+hard_rules:
+  - when:
+      - behavior_combo_disguised_credential_theft
+    floor: very_high
+  - when:
+      - marketplace_p2p_context
+      - asks_for_otp
+    floor: very_high
+counter_signals:
+  - official_platform_interaction
+variant_examples:
+  - "Te mando un codigo para validar la compra, pasamelo asi se acredita."
+  - "Mercado necesita que completes esta verificacion desde el link."
+  - "Para activar la venta tengo que confirmar tu cuenta con el codigo."
+recommended_actions:
+  - No compartas codigos ni entres a links enviados por la contraparte.
+  - Hace toda la operacion dentro de la plataforma oficial.
+  - Si te piden validar por afuera, da por cancelada la operacion.
+minimum_risk_level: very_high

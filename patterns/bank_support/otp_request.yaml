@@ -1,0 +1,29 @@
+code: bank_support_otp_request
+name: Supuesto banco pide OTP
+category: bank_support
+summary: Un mensaje o llamado dice ser del banco y pide un código de verificación para desbloquear o asegurar una cuenta.
+core_signals:
+  - behavior_credential_phishing_disguise_high
+  - behavior_combo_disguised_credential_theft
+high_weight_signals:
+  - behavior_justification_nonsensical
+  - bank_impersonation
+  - asks_for_otp
+  - urgency_language
+  - suspicious_link
+hard_rules:
+  - when:
+      - behavior_credential_phishing_disguise_high
+    floor: very_high
+  - when:
+      - behavior_combo_disguised_credential_theft
+    floor: very_high
+counter_signals: []
+variant_examples:
+  - "Somos del banco, pasanos el código para frenar un acceso sospechoso."
+  - "Necesitamos validar tu identidad con el OTP que te acabamos de enviar."
+recommended_actions:
+  - No compartas códigos de verificación.
+  - Cortá la comunicación y llamá al banco desde un canal oficial.
+  - Revisá tus accesos solo desde la app o web oficial.
+minimum_risk_level: very_high

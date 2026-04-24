@@ -1,0 +1,33 @@
+code: mixed_support_verification_link
+name: Falso soporte pide validar con link
+category: mixed
+summary: Un supuesto soporte tecnico o mesa de ayuda manda un link o pantalla de verificacion y empuja a confirmar datos, credenciales o pasos fuera del canal oficial.
+core_signals:
+  - support_impersonation
+  - suspicious_link
+  - behavior_standard_process_bypass_medium
+high_weight_signals:
+  - asks_for_credentials
+  - asks_for_otp
+  - behavior_credential_phishing_disguise_medium
+  - behavior_credential_phishing_disguise_high
+  - behavior_combo_disguised_credential_theft
+  - fake_verification_interface
+hard_rules:
+  - when:
+      - asks_for_credentials
+    floor: very_high
+  - when:
+      - behavior_combo_disguised_credential_theft
+    floor: very_high
+counter_signals:
+  - official_platform_interaction
+variant_examples:
+  - "Somos de soporte, entra a este link para verificar tu cuenta."
+  - "La aplicacion necesita una validacion urgente desde este enlace."
+  - "Tu servicio fue suspendido, completa el proceso de soporte aqui."
+recommended_actions:
+  - No ingreses claves ni codigos desde links enviados por chat o mail.
+  - Abri la app o sitio oficial por tu cuenta y revisa ahi si existe un problema real.
+  - Si el supuesto soporte insiste con apuro, corta la conversacion.
+minimum_risk_level: high

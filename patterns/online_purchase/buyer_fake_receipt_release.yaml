@@ -1,0 +1,33 @@
+code: online_purchase_buyer_fake_receipt_release
+name: Comprador manda comprobante y exige entrega
+category: online_purchase
+summary: Un supuesto comprador envia un comprobante o habla de demoras bancarias para que entregues, despaches o liberes el producto antes de que el pago exista de verdad.
+core_signals:
+  - unconfirmed_payment_pressure
+  - payment_settlement_bypass
+  - behavior_standard_process_bypass_high
+high_weight_signals:
+  - bank_delay_excuse
+  - behavior_asymmetric_risk_medium
+  - behavior_combo_asymmetric_risk_process_bypass
+  - behavior_justification_nonsensical
+  - urgency_language
+hard_rules:
+  - when:
+      - unconfirmed_payment_pressure
+      - payment_settlement_bypass
+    floor: high
+  - when:
+      - behavior_combo_asymmetric_risk_process_bypass
+    floor: high
+counter_signals:
+  - payment_on_delivery_available
+variant_examples:
+  - "Ya te mande el comprobante, entregamelo que el banco demora."
+  - "Despachalo ahora y en un rato impacta la transferencia."
+  - "Mercado Pago esta lento, liberalo igual porque ya esta pago."
+recommended_actions:
+  - No entregues ni despaches nada hasta ver el dinero acreditado en tu cuenta o en la plataforma.
+  - Ignora comprobantes o capturas como prueba suficiente.
+  - Verifica el pago desde tu propia app bancaria o plataforma, nunca desde lo que manda la otra persona.
+minimum_risk_level: high

@@ -1,0 +1,57 @@
+code: online_purchase_marketplace_advance_payment
+name: Estafa de pago adelantado en Marketplace
+category: online_purchase
+summary: >-
+  Operación P2P de Marketplace/Facebook/OLX/Mercado Libre donde el vendedor
+  cita al comprador en un domicilio o "punto de encuentro" pero exige que
+  transfiera primero y recién después baja o entrega el producto. La excusa
+  habitual es "por mi seguridad". Es un esquema clásico de pago adelantado sin
+  entrega verificable y termina en el comprador transfiriendo a un desconocido
+  que nunca aparece con la mercadería.
+core_signals:
+  - behavior_asymmetric_risk_high
+  - behavior_standard_process_bypass_high
+  - behavior_combo_asymmetric_risk_process_bypass
+high_weight_signals:
+  - behavior_trust_manipulation_high
+  - behavior_justification_nonsensical
+  - behavior_combo_nonsensical_transaction_justification
+  - marketplace_p2p_context
+  - seller_safety_excuse
+  - in_person_meeting_bait
+  - refuses_in_person_exchange
+  - price_too_good
+hard_rules:
+  - when:
+      - behavior_combo_asymmetric_risk_process_bypass
+    floor: high
+  - when:
+      - behavior_asymmetric_risk_high
+      - behavior_justification_nonsensical
+    floor: high
+  - when:
+      - behavior_trust_manipulation_high
+      - behavior_standard_process_bypass_high
+      - behavior_justification_nonsensical
+    floor: very_high
+  - when:
+      - seller_safety_excuse
+      - transfer_request
+      - in_person_meeting_bait
+    floor: very_high
+counter_signals:
+  - payment_on_delivery_available
+  - official_platform_interaction
+  - verified_identity_signal
+variant_examples:
+  - "Pagame primero por transferencia y después bajo con la consola, es por mi seguridad."
+  - "Vení al edificio, me transferís la seña y te la alcanzo al portal."
+  - "No puedo mostrarte el producto antes, primero la transferencia y después nos vemos."
+  - "Te reservo la PlayStation si me pasás el dinero al alias, después coordinamos el retiro."
+recommended_actions:
+  - No transfieras dinero antes de tener el producto físicamente en tus manos.
+  - Si el vendedor se niega al intercambio cara a cara antes del pago, cortá la operación.
+  - Usá siempre el sistema de pago y protección al comprador de la plataforma original (Mercado Pago en modo compra protegida, por ejemplo).
+  - Desconfiá de la excusa "por mi seguridad" — el riesgo real en una compraventa P2P lo asume el comprador.
+  - Guardá capturas del chat, del perfil del vendedor y de la publicación antes de cualquier movimiento.
+minimum_risk_level: high

@@ -2,7 +2,7 @@
 
 Una herramienta gratuita y sin login que te ayuda a evaluar si una interacción digital (mensaje de WhatsApp, publicación de marketplace, llamada de "soporte bancario", etc.) es probablemente una estafa.
 
-![Estafómetro Logo](./public/logo.svg)
+![Estafómetro Logo](./public/logo.png)
 
 ## ¿Qué es Estafómetro?
 

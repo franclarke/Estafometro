@@ -1,0 +1,24 @@
+code: bank_support_account_unlock_link
+name: Link para desbloquear cuenta
+category: bank_support
+summary: Un mensaje dice que la cuenta está bloqueada o en riesgo y manda un link para desbloquearla o verificarla.
+core_signals:
+  - bank_impersonation
+  - suspicious_link
+  - urgency_language
+high_weight_signals:
+  - asks_for_credentials
+  - asks_for_otp
+hard_rules:
+  - when:
+      - asks_for_credentials
+    floor: high
+counter_signals: []
+variant_examples:
+  - "Tu cuenta fue bloqueada, ingresá acá para reactivarla."
+  - "Detectamos actividad sospechosa, verificá tus datos en este link."
+recommended_actions:
+  - No abras el link ni cargues tus datos.
+  - Entrá solo desde la app o web oficial del banco.
+  - Si tenés dudas, llamá al canal oficial.
+minimum_risk_level: high

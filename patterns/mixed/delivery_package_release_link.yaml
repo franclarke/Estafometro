@@ -1,0 +1,34 @@
+code: mixed_delivery_package_release_link
+name: Falso correo con paquete retenido y link de pago
+category: mixed
+summary: Un mensaje o llamada dice ser del correo o de una mensajeria, afirma que hay un paquete retenido y pide pagar un importe pequeno entrando a un link para liberarlo.
+core_signals:
+  - delivery_impersonation
+  - transfer_request
+  - suspicious_link
+high_weight_signals:
+  - payment_settlement_bypass
+  - behavior_asymmetric_risk_medium
+  - behavior_standard_process_bypass_medium
+  - behavior_combo_asymmetric_risk_process_bypass
+  - behavior_justification_weak
+hard_rules:
+  - when:
+      - delivery_impersonation
+      - transfer_request
+      - suspicious_link
+    floor: high
+  - when:
+      - behavior_combo_asymmetric_risk_process_bypass
+    floor: high
+counter_signals:
+  - official_platform_interaction
+variant_examples:
+  - "Tu paquete quedo retenido. Para liberarlo paga este monto desde el link."
+  - "Somos del correo, falta abonar una tasa para entregar tu compra."
+  - "Andreani informa que tu envio esta en espera. Ingresa aca y paga para destrabarlo."
+recommended_actions:
+  - No abras el link ni pagues desde ese mensaje.
+  - Verifica el estado del envio solo desde la app o web oficial del correo.
+  - Si estabas esperando una compra, revisa el seguimiento desde el comercio original.
+minimum_risk_level: high

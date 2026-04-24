@@ -1,0 +1,23 @@
+code: online_purchase_urgent_deposit_seller
+name: Vendedor pide seña urgente
+category: online_purchase
+summary: Un vendedor presiona para que envíes una seña o depósito rápido para reservar un producto.
+core_signals:
+  - deposit_request
+  - urgency_language
+  - price_too_good
+high_weight_signals:
+  - transfer_request
+  - channel_shift
+hard_rules: []
+counter_signals:
+  - verified_identity_signal
+  - official_platform_interaction
+variant_examples:
+  - "Hay mucha gente interesada, si querés te lo reservo con una seña ahora."
+  - "Es el último precio, pero me tenés que transferir hoy."
+recommended_actions:
+  - No envíes una seña sin verificar identidad y condiciones.
+  - Priorizá métodos con protección o pago contra entrega.
+  - Desconfiá si te apuran para cerrar ya.
+minimum_risk_level: medium

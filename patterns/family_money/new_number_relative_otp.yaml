@@ -1,0 +1,33 @@
+code: family_money_new_number_relative_otp
+name: Familiar con numero nuevo pide codigo
+category: family_money
+summary: Una persona dice ser un familiar desde un numero nuevo y pide un codigo de verificacion o credenciales bajo alguna excusa urgente.
+core_signals:
+  - family_impersonation
+  - new_number_claim
+  - behavior_credential_phishing_disguise_high
+high_weight_signals:
+  - asks_for_otp
+  - asks_for_credentials
+  - identity_change
+  - urgent_transfer
+  - emotional_pressure
+  - behavior_combo_disguised_credential_theft
+hard_rules:
+  - when:
+      - new_number_claim
+      - asks_for_otp
+    floor: very_high
+  - when:
+      - behavior_combo_disguised_credential_theft
+    floor: very_high
+counter_signals:
+  - verified_identity_signal
+variant_examples:
+  - "Hola ma, cambie de numero. Pasame el codigo que te llega asi activo mi cuenta."
+  - "Soy tu hijo, perdi el telefono y necesito que me confirmes un codigo urgente."
+recommended_actions:
+  - No compartas codigos ni claves, aunque parezca un familiar.
+  - Llama al contacto conocido por otro canal antes de hacer nada.
+  - Si hay apuro o excusas raras, asumi que puede ser una suplantacion.
+minimum_risk_level: very_high
