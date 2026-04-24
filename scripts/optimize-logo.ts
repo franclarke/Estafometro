@@ -41,13 +41,11 @@ async function writeOgImage() {
     <rect x="0" y="${height - 4}" width="${width}" height="4" fill="url(#accent)"/>
 
     <!-- Isotype (scaled from 64×64 source to 200px) -->
-    <g transform="translate(340 210) scale(3.125)">
+    <g transform="translate(210 210) scale(3.125)">
       <path d="M32 6c13.807 0 25 9.551 25 21.333 0 11.783-11.193 21.334-25 21.334-2.686 0-5.277-.362-7.703-1.03L11.2 55.2a1 1 0 0 1-1.542-1.046l2.2-9.66C8.678 40.71 7 34.342 7 27.333 7 15.55 18.193 6 32 6Z"
             fill="#fffdf8" stroke="#0c9488" stroke-width="3.2" stroke-linejoin="round"/>
       <path d="M18 32a14 14 0 0 1 28 0" stroke="#0c9488" stroke-width="3" stroke-linecap="round" fill="none"/>
-      <g transform="rotate(45 32 32)">
-        <line x1="32" y1="32" x2="41" y2="22" stroke="#1b2e3c" stroke-width="2.8" stroke-linecap="round"/>
-      </g>
+      <line x1="32" y1="32" x2="41" y2="22" stroke="#1b2e3c" stroke-width="2.8" stroke-linecap="round"/>
       <circle cx="32" cy="32" r="2" fill="#1b2e3c"/>
       <circle cx="23" cy="41" r="2.2" fill="#2f8457"/>
       <circle cx="32" cy="41" r="2.2" fill="#d09b4b"/>
@@ -55,8 +53,8 @@ async function writeOgImage() {
     </g>
 
     <!-- Wordmark -->
-    <text x="585" y="355" font-family="'Public Sans', 'Segoe UI', system-ui, sans-serif"
-          font-size="112" font-weight="700" fill="#1b2e3c" letter-spacing="-2">
+    <text x="445" y="355" font-family="'Public Sans', 'Segoe UI', system-ui, sans-serif"
+          font-size="108" font-weight="700" fill="#1b2e3c" letter-spacing="-2">
       Estafómetro
     </text>
 

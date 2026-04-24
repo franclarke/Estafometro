@@ -14,7 +14,8 @@
     "test:behavioral": "tsx scripts/test-behavioral-engine.ts",
     "patterns:validate": "tsx scripts/validate-patterns.ts",
     "patterns:sync": "tsx scripts/sync-patterns.ts",
-    "supabase:types": "tsx scripts/gen-supabase-types.ts"
+    "supabase:types": "tsx scripts/gen-supabase-types.ts",
+    "assets:logo": "tsx scripts/optimize-logo.ts"
   },
   "overrides": {
     "postcss": "8.5.10"
