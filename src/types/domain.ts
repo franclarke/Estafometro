@@ -141,5 +141,26 @@ export interface FeedbackRecord {
   helpful: boolean;
   falseAlarm: boolean;
   comment: string | null;
+  outcome: FeedbackOutcome | null;
+  actionTaken: FeedbackActionTaken | null;
+  clarityScore: number | null;
+  reasonTags: string[];
   createdAt: string;
+  updatedAt: string | null;
 }
+
+export type FeedbackOutcome =
+  | "paused"
+  | "verified"
+  | "ignored"
+  | "already_paid"
+  | "reported"
+  | "other";
+
+export type FeedbackActionTaken =
+  | "did_not_pay"
+  | "called_official_channel"
+  | "asked_family"
+  | "blocked_contact"
+  | "saved_evidence"
+  | "other";

@@ -419,27 +419,42 @@ export type Database = {
       feedback: {
         Row: {
           case_id: string
+          action_taken: string | null
+          clarity_score: number | null
           comment: string | null
           created_at: string
           false_alarm: boolean
           helpful: boolean
           id: string
+          outcome: string | null
+          reason_tags: string[]
+          updated_at: string
         }
         Insert: {
           case_id: string
+          action_taken?: string | null
+          clarity_score?: number | null
           comment?: string | null
           created_at?: string
           false_alarm?: boolean
           helpful: boolean
           id?: string
+          outcome?: string | null
+          reason_tags?: string[]
+          updated_at?: string
         }
         Update: {
           case_id?: string
+          action_taken?: string | null
+          clarity_score?: number | null
           comment?: string | null
           created_at?: string
           false_alarm?: boolean
           helpful?: boolean
           id?: string
+          outcome?: string | null
+          reason_tags?: string[]
+          updated_at?: string
         }
         Relationships: [
           {
@@ -643,16 +658,35 @@ export type Database = {
     Views: {
       funnel_daily: {
         Row: {
+          analysis_completion_rate: number | null
           analyses_completed: number | null
           cases_started: number | null
           day: string | null
+          feedback_rate: number | null
           feedback_submitted: number | null
+          results_copied: number | null
+          results_shared: number | null
+        }
+        Relationships: []
+      }
+      feedback_quality: {
+        Row: {
+          avg_clarity_score: number | null
+          case_type: string | null
+          day: string | null
+          final_risk_level: Database["public"]["Enums"]["risk_level"] | null
+          helpful_count: number | null
+          negative_count: number | null
+          paused_or_verified_count: number | null
+          total_feedback: number | null
         }
         Relationships: []
       }
       risk_distribution: {
         Row: {
           final_risk_level: Database["public"]["Enums"]["risk_level"] | null
+          helpful_feedback: number | null
+          paused_or_verified: number | null
           total_cases: number | null
         }
         Relationships: []

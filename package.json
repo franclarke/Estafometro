@@ -12,8 +12,11 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:behavioral": "tsx scripts/test-behavioral-engine.ts",
+    "test:quality": "tsx scripts/test-quality.ts",
     "patterns:validate": "tsx scripts/validate-patterns.ts",
     "patterns:sync": "tsx scripts/sync-patterns.ts",
+    "patterns:candidates": "tsx scripts/candidate-patterns-report.ts",
+    "analytics:v2": "tsx scripts/v2-analytics-report.ts",
     "supabase:types": "tsx scripts/gen-supabase-types.ts",
     "assets:logo": "tsx scripts/optimize-logo.ts"
   },

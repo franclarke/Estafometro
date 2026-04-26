@@ -27,4 +27,17 @@ describe("applyHardRules", () => {
     const result = applyHardRules(["delivery_impersonation", "transfer_request", "suspicious_link"], "low");
     expect(result.level).toBe("high");
   });
+
+  it("floors family new-number urgent transfer to high", () => {
+    const result = applyHardRules(
+      ["family_impersonation", "new_number_claim", "urgent_transfer", "transfer_request"],
+      "medium",
+    );
+    expect(result.level).toBe("high");
+  });
+
+  it("floors suspicious links to medium", () => {
+    const result = applyHardRules(["suspicious_link"], "low");
+    expect(result.level).toBe("medium");
+  });
 });

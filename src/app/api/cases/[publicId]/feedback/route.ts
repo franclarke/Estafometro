@@ -21,15 +21,23 @@ export async function POST(
       helpful: payload.helpful,
       falseAlarm: payload.false_alarm,
       comment: payload.comment ?? null,
+      outcome: payload.outcome ?? null,
+      actionTaken: payload.action_taken ?? null,
+      clarityScore: payload.clarity_score ?? null,
+      reasonTags: payload.reason_tags,
     });
 
     await trackEvent({
-      eventType: analyticsEvents.feedbackSubmitted,
+      eventType: analyticsEvents.feedbackSubmittedV2,
       caseId: caseRecord.id,
       ipHash: getIpHash(request),
       properties: {
         helpful: payload.helpful,
         falseAlarm: payload.false_alarm,
+        outcome: payload.outcome ?? null,
+        actionTaken: payload.action_taken ?? null,
+        clarityScore: payload.clarity_score ?? null,
+        reasonTags: payload.reason_tags,
       },
     });
 

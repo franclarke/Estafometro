@@ -30,6 +30,16 @@ const hardRules = [
     floor: "very_high" as const,
   },
   {
+    id: "family_new_number_urgent_transfer_floor_high",
+    when: ["family_impersonation", "new_number_claim", "urgent_transfer", "transfer_request"],
+    floor: "high" as const,
+  },
+  {
+    id: "suspicious_link_floor_medium",
+    when: ["suspicious_link"],
+    floor: "medium" as const,
+  },
+  {
     id: "asks_for_credentials_floor_very_high",
     when: ["asks_for_credentials"],
     floor: "very_high" as const,

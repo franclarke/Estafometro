@@ -5,20 +5,28 @@ const patterns: Array<{ code: string; regex: RegExp }> = [
   {
     code: "transfer_request",
     regex:
-      /\b(transferi|transferir|transferime|transferile|transferencia|transfiere|transfieran|transfieras|deposita|depositame|pagame|pagar|pagues|pago|abonar|abones|abona|cobro|importe|monto|pasame (el |la )?(plata|dinero|guita))\b/i,
+      /\b(transferi|transferir|transferime|transferile|transferencia|transfiere|transfieran|transfieras|deposita|depositame|pagame|pagas|pagar|pagues|pago|abonar|abones|abona|cobro|importe|monto|pasame (el |la )?(plata|dinero|guita))\b/i,
   },
-  { code: "deposit_request", regex: /\b(sena|deposito)\b/i },
+  { code: "deposit_request", regex: /\b(sena|deposito|depositar|depositame|mandame una sena|manda una sena|se[nÃ±]a para guardar|reservalo con sena|reservar con sena)\b/i },
   { code: "off_platform_payment", regex: /\bpor fuera de (la )?plataforma|afuera de (mercado|la plataforma)\b/i },
-  { code: "platform_bypass", regex: /\bseguime por whatsapp|hablame por whatsapp|por instagram|por privado\b/i },
+  { code: "platform_bypass", regex: /\bseguime por whatsapp|hablame por whatsapp|pasar a whatsapp|pasemos a whatsapp|por instagram|por privado\b/i },
   { code: "new_number_claim", regex: /\bcambie de numero|este es mi numero nuevo\b/i },
   { code: "identity_change", regex: /\bcambie de numero|me hackearon|perdi el telefono\b/i },
   { code: "urgent_transfer", regex: /\burgente|ya mismo|ahora|en este momento\b/i },
   { code: "urgency_language", regex: /\burgente|apurate|ahora mismo|sin demora\b/i },
-  { code: "scarcity_pressure", regex: /\b(mucha gente|varios interesados|te lo reservo|senalo|senalamelo|antes que otro|vuela)\b/i },
+  { code: "scarcity_pressure", regex: /\b(mucha gente|varios interesados|te lo reservo|te lo guardo|lo guardo hasta|senalo|senalamelo|antes que otro|vuela|hay otros interesados)\b/i },
   { code: "emotional_pressure", regex: /\bpor favor|estoy desesperado|me ayudas|es de vida o muerte\b/i },
   { code: "secrecy_request", regex: /\bno le digas a nadie|mantenelo en secreto|que nadie se entere\b/i },
   { code: "authority_impersonation", regex: /\bpolicia|fiscalia|juzgado|comisaria|tribunal\b/i },
-  { code: "bank_impersonation", regex: /\bbanco|homebanking|cuenta bloqueada|tarjeta\b/i },
+  {
+    code: "bank_impersonation",
+    regex:
+      /\b(somos|soy|te escribimos|habla|contactamos|soporte|seguridad)\b[\s\S]{0,40}\b(banco|homebanking|tarjeta)\b|\b(tu )?cuenta\b[\s\S]{0,40}\b(bloqueada|suspendida|desbloquear|validar)\b|\bbanco\b[\s\S]{0,60}\b(codigo|token|clave|otp|validar|desbloquear)\b/i,
+  },
+  {
+    code: "bank_impersonation",
+    regex: /\bhomebanking\b[\s\S]{0,80}\b(usuario|clave|contrasena|token|desbloquear|validar)\b/i,
+  },
   {
     code: "delivery_impersonation",
     regex:
@@ -26,13 +34,13 @@ const patterns: Array<{ code: string; regex: RegExp }> = [
   },
   { code: "support_impersonation", regex: /\bsoporte|servicio tecnico|asistencia\b/i },
   { code: "family_impersonation", regex: /\bsoy tu hijo|soy tu hija|mama|papa|tia|tio\b/i },
-  { code: "bribery_request", regex: /\bcoima|arreglo|resolvemos con una transferencia|pagar para evitar\b/i },
+  { code: "bribery_request", regex: /\bcoima|arreglo|arreglamos|resolvemos con una transferencia|pagar para evitar\b/i },
   { code: "threatens_arrest", regex: /\ballanamiento|detencion|arresto|te van a venir a buscar\b/i },
   { code: "threatens_legal_action", regex: /\bdenuncia|causa penal|juicio|consecuencias legales\b/i },
   { code: "asks_for_credentials", regex: /\bclave|contrasena|usuario del banco|token de acceso\b/i },
   { code: "suspicious_link", regex: /\bhttps?:\/\/\S+/i },
   { code: "price_too_good", regex: /\bdemasiado barato|precio regalado|oferta unica|mitad de precio|muy por debajo\b/i },
-  { code: "channel_shift", regex: /\bseguime por|hablame por|pasemos a whatsapp|pasemos a telegram\b/i },
+  { code: "channel_shift", regex: /\bseguime por|hablame por|pasar a whatsapp|pasemos a whatsapp|pasemos a telegram\b/i },
   {
     code: "marketplace_p2p_context",
     regex: /\b(marketplace|facebook marketplace|mercado libre|olx|milanuncios|segundamano)\b/i,
@@ -58,6 +66,18 @@ const patterns: Array<{ code: string; regex: RegExp }> = [
     regex: /\b(comprobante|transferencia demora|todavia no impacta|despues se acredita)\b[\s\S]{0,120}\b(entrega|manda|despacha|libera|damelo|pasamelo)\b/i,
   },
   {
+    code: "unconfirmed_payment_pressure",
+    regex: /\b(te mande|envie|adjunto|ahi va)\b[\s\S]{0,40}\b(comprobante|captura)\b[\s\S]{0,160}\b(entrega|entregame|libera|liberalo|despacha|mandame|igual)\b/i,
+  },
+  {
+    code: "payment_on_delivery_available",
+    regex: /\b(pago al retirar|pagar al retirar|pago cuando retiro|contra entrega|contrareembolso|nos vemos y pago ahi|pago ahi|pago en persona)\b/i,
+  },
+  {
+    code: "official_platform_interaction",
+    regex: /\b(por mercado pago|por mercadopago|checkout oficial|dentro de la plataforma|pago protegido|mercado libre protegido|por la app oficial)\b/i,
+  },
+  {
     code: "suspicious_link",
     regex: /\b(link|enlace|url)\b[\s\S]{0,80}\b(abrir|entrar|ingresar|tocar|hacer click|clic|pagar|abonar|liberar|desbloquear|verificar|confirmar)\b|\b(abrir|entrar|ingresar|tocar|hacer click|clic|pagar|abonar|liberar|desbloquear|verificar|confirmar)\b[\s\S]{0,80}\b(link|enlace|url)\b/i,
   },
@@ -67,7 +87,7 @@ const patterns: Array<{ code: string; regex: RegExp }> = [
   },
 ];
 
-const PAYMENT_VERB = "(transfer|deposi|pag|abona|sena)";
+const PAYMENT_VERB = "(transfer|transfi|deposi|pag|abona|sena)";
 const DELIVERY_VERB = "(baj|entreg|te (la|lo) (doy|llev|muestro|paso|alcanzo)|llev|retir|mostr|vernos|verte)";
 
 const multiWordPatterns: Array<{ code: string; regex: RegExp }> = [
@@ -111,6 +131,50 @@ function matches(text: string, stripped: string, regex: RegExp) {
   return regex.test(text) || regex.test(stripped);
 }
 
+function shouldSuppressGenericTransferRequest(input: {
+  text: string;
+  stripped: string;
+  detectedCodes: string[];
+}) {
+  if (!input.detectedCodes.includes("transfer_request")) {
+    return false;
+  }
+
+  const hasExplicitMoneyMovement = matches(
+    input.text,
+    input.stripped,
+    /\b(transferi|transferir|transferime|transferencia|transfiere|depositame|deposita|alias|cbu|sena|deposito)\b/i,
+  );
+  const hasNegatedPaymentTalk = matches(
+    input.text,
+    input.stripped,
+    /\b(no hablamos de pagar|todavia no (hablamos|me pidio|me pidieron)[\s\S]{0,40}pagar|no (me )?pidio pagar|no (me )?pidieron pagar)\b/i,
+  );
+  const hasSafePaymentFlow =
+    input.detectedCodes.includes("payment_on_delivery_available") ||
+    input.detectedCodes.includes("official_platform_interaction");
+  const hasRiskCompanion = input.detectedCodes.some((code) =>
+    [
+      "urgent_transfer",
+      "scarcity_pressure",
+      "off_platform_payment",
+      "platform_bypass",
+      "asks_for_otp",
+      "authority_impersonation",
+      "family_impersonation",
+      "delivery_impersonation",
+      "off_platform_payment",
+      "platform_bypass",
+    ].includes(code),
+  );
+
+  if (hasNegatedPaymentTalk && !hasExplicitMoneyMovement) {
+    return true;
+  }
+
+  return hasSafePaymentFlow && !hasExplicitMoneyMovement && !hasRiskCompanion;
+}
+
 export function detectRuleSignals(text: string, entities: ExtractedEntity[] = []): ExtractedSignal[] {
   const lower = text.toLowerCase();
   const lowerStripped = stripDiacritics(lower);
@@ -132,12 +196,21 @@ export function detectRuleSignals(text: string, entities: ExtractedEntity[] = []
     signals.push({ code: "alias_shared", confidence: 0.88 });
   }
 
+  if (matches(lower, lowerStripped, /\balias\b/i)) {
+    signals.push({ code: "alias_shared", confidence: 0.82 });
+  }
+
   if (entities.some((entity) => entity.type === "cbu")) {
     signals.push({ code: "cbu_shared", confidence: 0.9 });
   }
 
   if (entities.some((entity) => entity.type === "url")) {
     signals.push({ code: "suspicious_link", confidence: 0.8 });
+  }
+
+  const detectedCodes = signals.map((signal) => signal.code);
+  if (shouldSuppressGenericTransferRequest({ text: lower, stripped: lowerStripped, detectedCodes })) {
+    return signals.filter((signal) => signal.code !== "transfer_request");
   }
 
   return signals;

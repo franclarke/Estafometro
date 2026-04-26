@@ -7,6 +7,8 @@ import { createAnalysisRun } from "@/server/analysis-runs/repository";
 import { buildCaseFingerprint } from "@/server/candidate-patterns/fingerprint";
 import { upsertCandidatePattern } from "@/server/candidate-patterns/upsert";
 import { getCaseByPublicId, updateCaseRecord } from "@/server/cases/repository";
+import { buildActionPlan } from "@/server/explanations/build-action-plan";
+import { buildFollowupQuestions } from "@/server/explanations/build-followup-questions";
 import { buildRecommendations } from "@/server/explanations/build-recommendations";
 import { buildLimitsNotice } from "@/server/explanations/limits-notice";
 import { buildUserSummary } from "@/server/explanations/build-user-summary";
@@ -15,13 +17,16 @@ import { listEvidenceByCaseId } from "@/server/evidence/repository";
 import { runExternalChecks } from "@/server/enrichment/run-checks";
 import { replaceCaseEntities } from "@/server/entities/repository";
 import { normalizeEntities } from "@/server/extraction/normalize-entities";
+import { normalizeExtractionForRisk } from "@/server/extraction/normalize-for-risk";
 import { runGeminiExtraction } from "@/server/extraction/run-extraction";
 import { replaceExternalChecks, replacePatternMatches } from "@/server/patterns/repository";
 import { matchOfficialPatterns } from "@/server/patterns/match-official";
 import { preprocessCase } from "@/server/preprocessing";
 import { applyPrivacyModeAfterAnalysis } from "@/server/privacy/retention-policy";
 import { applyHardRules } from "@/server/risk/apply-hard-rules";
+import { buildConfidenceReason, calibrateRiskDecision } from "@/server/risk/calibration";
 import { computeConfidence } from "@/server/risk/confidence";
+import { deriveRiskFactors } from "@/server/risk/factors";
 import { computeFinalScore } from "@/server/risk/final-score";
 import { deriveRiskLevel } from "@/server/risk/risk-band";
 import { computeSubscores } from "@/server/risk/subscores";
@@ -92,12 +97,15 @@ function buildAnalyzedEvidenceSummary(
   };
 }
 
-export async function runCaseAnalysis(publicId: string): Promise<AnalysisResultPayload> {
+export async function runCaseAnalysis(
+  publicId: string,
+  options: { force?: boolean } = {},
+): Promise<AnalysisResultPayload> {
   const startedAt = Date.now();
   const env = getServerEnv();
 
   const caseRecord = await getCaseByPublicId(publicId);
-  if (caseRecord.status === "analyzed" || caseRecord.status === "partial") {
+  if (!options.force && (caseRecord.status === "analyzed" || caseRecord.status === "partial")) {
     return getCaseResult(publicId);
   }
 
@@ -112,12 +120,19 @@ export async function runCaseAnalysis(publicId: string): Promise<AnalysisResultP
       mergedCaseText: preprocessing.mergedCaseText,
       preprocessedEvidence: preprocessing.preprocessedEvidence,
     });
-    const extraction = extractionRun.extraction;
+    let extraction = extractionRun.extraction;
 
     const normalizedEntities = normalizeEntities([...preprocessing.parsedEntities, ...extraction.entities]);
     await replaceCaseEntities(caseRecord.id, normalizedEntities);
 
     const ruleSignals = detectRuleSignals(preprocessing.mergedCaseText, normalizedEntities);
+    const normalizedExtraction = normalizeExtractionForRisk({
+      extraction,
+      ruleSignals,
+      mergedCaseText: preprocessing.mergedCaseText,
+    });
+    extraction = normalizedExtraction.extraction;
+
     const enrichment = await runExternalChecks({
       caseType: extraction.caseType,
       entities: normalizedEntities,
@@ -164,8 +179,8 @@ export async function runCaseAnalysis(publicId: string): Promise<AnalysisResultP
     );
 
     const subscores = computeSubscores(mergedSignals);
-    let finalScore = computeFinalScore(subscores);
-    let riskLevel = deriveRiskLevel(finalScore);
+    const baseScore = computeFinalScore(subscores);
+    let riskLevel = deriveRiskLevel(baseScore);
 
     const baseHardRules = applyHardRules(mergedSignals.map((signal) => signal.code), riskLevel);
     riskLevel = baseHardRules.level;
@@ -175,9 +190,26 @@ export async function runCaseAnalysis(publicId: string): Promise<AnalysisResultP
       matchedPatterns: patternMatches,
     });
     riskLevel = floorRiskLevel(riskLevel, patternFloor.level);
-    finalScore = Math.max(finalScore, minimumScoreForLevel(riskLevel));
+    const hardRulesApplied = [...baseHardRules.applied, ...patternFloor.applied];
+    const riskFactors = deriveRiskFactors(mergedSignals);
+    const calibratedRisk = calibrateRiskDecision({
+      baseScore,
+      baseLevel: riskLevel,
+      signalCodes: mergedSignals.map((signal) => signal.code),
+      factors: riskFactors,
+      hardRulesApplied,
+    });
+    riskLevel = calibratedRisk.level;
+    const finalScore = Math.max(calibratedRisk.score, minimumScoreForLevel(riskLevel));
 
     const confidence = computeConfidence({
+      signalCount: mergedSignals.length,
+      hasExternal: enrichment.findings.some((finding) => finding.status !== "skipped"),
+      hasPatternMatch: patternMatches.length > 0,
+      hasNarrative: Boolean(preprocessing.mergedCaseText),
+    });
+    const confidenceReason = buildConfidenceReason({
+      confidence,
       signalCount: mergedSignals.length,
       hasExternal: enrichment.findings.some((finding) => finding.status !== "skipped"),
       hasPatternMatch: patternMatches.length > 0,
@@ -202,6 +234,17 @@ export async function runCaseAnalysis(publicId: string): Promise<AnalysisResultP
       extraction,
       mergedCaseText: preprocessing.mergedCaseText,
     });
+    const actionPlan = buildActionPlan({
+      riskLevel,
+      caseType: extraction.caseType,
+      signals: mergedSignals,
+    });
+    const followupQuestions = buildFollowupQuestions({
+      caseType: extraction.caseType,
+      signals: mergedSignals,
+      uncertainties,
+      suggestedFollowupQuestion: extraction.suggestedFollowupQuestion,
+    });
 
     if (!patternMatches.length || (patternMatches[0]?.matchScore ?? 0) < 0.85) {
       const fingerprint = buildCaseFingerprint(extraction);
@@ -216,8 +259,6 @@ export async function runCaseAnalysis(publicId: string): Promise<AnalysisResultP
       ? "partial"
       : "success";
 
-    const hardRulesApplied = [...baseHardRules.applied, ...patternFloor.applied];
-
     await createAnalysisRun({
       caseId: caseRecord.id,
       pipelineVersion: "pipeline.v1",
@@ -231,6 +272,15 @@ export async function runCaseAnalysis(publicId: string): Promise<AnalysisResultP
         analyzed_evidence: analyzedEvidence,
         uncertainties,
         recommendations,
+        action_plan: actionPlan,
+        risk_trace: {
+          ...calibratedRisk.trace,
+          extraction_adjustments: normalizedExtraction.adjustments,
+          base_score: baseScore,
+          final_score: finalScore,
+          final_level: riskLevel,
+        },
+        confidence_reason: confidenceReason,
         suggested_followup_question: extraction.suggestedFollowupQuestion,
       } satisfies Subscores & Record<string, unknown>,
       hardRulesApplied,
@@ -272,6 +322,9 @@ export async function runCaseAnalysis(publicId: string): Promise<AnalysisResultP
         level: riskLevel,
         score: finalScore,
         confidence,
+        explanationSummary: calibratedRisk.explanationSummary,
+        topFactors: calibratedRisk.topFactors,
+        confidenceReason,
       },
       signals: mergedSignals,
       externalFindings: enrichment.findings.map((finding) => ({
@@ -286,6 +339,8 @@ export async function runCaseAnalysis(publicId: string): Promise<AnalysisResultP
       })),
       uncertainties,
       recommendations,
+      actionPlan,
+      followupQuestions,
       limitsNotice: buildLimitsNotice(),
       suggestedFollowupQuestion: extraction.suggestedFollowupQuestion,
       behavioralVectors: extraction.behavioralVectors,

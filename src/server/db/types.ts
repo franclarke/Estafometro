@@ -85,5 +85,10 @@ export interface DbFeedbackRow {
   helpful: boolean;
   false_alarm: boolean;
   comment: string | null;
+  outcome?: string | null;
+  action_taken?: string | null;
+  clarity_score?: number | null;
+  reason_tags?: string[];
   created_at: string;
+  updated_at?: string | null;
 }
