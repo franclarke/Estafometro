@@ -5,4 +5,11 @@ export const analyticsEvents = {
   analysisCompleted: "analysis_completed",
   analysisFailed: "analysis_failed",
   feedbackSubmitted: "feedback_submitted",
+  feedbackSubmittedV2: "feedback_submitted_v2",
+  resultCopied: "result_copied",
+  resultShared: "result_shared",
+  followupAnswered: "followup_answered",
+  reanalysisCompleted: "reanalysis_completed",
+  candidatePatternPromoted: "candidate_pattern_promoted",
+  candidatePatternDismissed: "candidate_pattern_dismissed",
 } as const;

@@ -4,28 +4,25 @@ import { z } from "zod";
 import { apiError, apiOk } from "@/lib/validation/api";
 import { analyticsEvents } from "@/server/analytics/events";
 import { trackEvent } from "@/server/analytics/track-event";
-import { promoteCandidatePattern } from "@/server/candidate-patterns/promote";
+import { dismissCandidatePattern } from "@/server/candidate-patterns/repository";
 import { assertInternalSecret } from "@/server/request-context";
 
 const payloadSchema = z.object({
   candidatePatternId: z.string().uuid(),
-  newPatternCode: z.string().min(1),
 });
 
 export async function POST(request: NextRequest) {
   try {
     assertInternalSecret(request);
     const payload = payloadSchema.parse(await request.json());
-    const patternId = await promoteCandidatePattern(payload);
+    const candidatePatternId = await dismissCandidatePattern(payload.candidatePatternId);
+
     await trackEvent({
-      eventType: analyticsEvents.candidatePatternPromoted,
-      properties: {
-        candidatePatternId: payload.candidatePatternId,
-        patternId,
-        newPatternCode: payload.newPatternCode,
-      },
+      eventType: analyticsEvents.candidatePatternDismissed,
+      properties: { candidatePatternId },
     });
-    return apiOk({ patternId });
+
+    return apiOk({ candidatePatternId });
   } catch (error) {
     return apiError(error);
   }

@@ -109,6 +109,11 @@ export function mapFeedbackRow(row: DbFeedbackRow): FeedbackRecord {
     helpful: row.helpful,
     falseAlarm: row.false_alarm,
     comment: row.comment,
+    outcome: (row.outcome ?? null) as FeedbackRecord["outcome"],
+    actionTaken: (row.action_taken ?? null) as FeedbackRecord["actionTaken"],
+    clarityScore: row.clarity_score ?? null,
+    reasonTags: row.reason_tags ?? [],
     createdAt: row.created_at,
+    updatedAt: row.updated_at ?? null,
   };
 }

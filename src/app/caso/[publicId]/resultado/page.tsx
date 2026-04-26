@@ -4,39 +4,14 @@ import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
 import { FeedbackForm } from "@/components/feedback/feedback-form";
 import { ExternalFindings } from "@/components/result/external-findings";
+import { FollowupQuestions } from "@/components/result/followup-questions";
 import { RecommendationPanel } from "@/components/result/recommendation-panel";
 import { RiskGauge } from "@/components/result/risk-gauge";
+import { RiskReasons } from "@/components/result/risk-reasons";
 import { ShareResultActions } from "@/components/result/share-result-actions";
 import { SignalList } from "@/components/result/signal-list";
 import { riskTone } from "@/lib/copy/es-ar";
 import { getCaseResult } from "@/server/cases/result";
-import type { AnalysisResultPayload } from "@/types/analysis";
-
-function buildAvoidActions(result: AnalysisResultPayload) {
-  const codes = new Set(result.signals.map((signal) => signal.code));
-  const actions = [
-    "No compartas claves, códigos de verificación, token ni fotos de tarjetas.",
-    "No transfieras dinero hasta verificar por un canal oficial o independiente.",
-  ];
-
-  if (
-    codes.has("suspicious_link") ||
-    codes.has("phishing_domain_characteristics") ||
-    codes.has("brand_domain_mismatch")
-  ) {
-    actions.push("No abras links ni completes formularios enviados por esa conversación.");
-  }
-
-  if (codes.has("platform_bypass") || codes.has("off_platform_payment")) {
-    actions.push("No pagues por fuera de la plataforma donde empezó la operación.");
-  }
-
-  if (codes.has("threatens_arrest") || codes.has("authority_impersonation")) {
-    actions.push("No negocies bajo amenaza: cortá y consultá por canales oficiales.");
-  }
-
-  return Array.from(new Set(actions)).slice(0, 4);
-}
 
 function ResultBlock({
   title,
@@ -76,7 +51,8 @@ export default async function ResultPage({
 }) {
   const { publicId } = await params;
   const result = await getCaseResult(publicId);
-  const avoidActions = buildAvoidActions(result);
+  const riskSignals = result.signals.filter((signal) => signal.groupName !== "trust_builder");
+  const trustSignals = result.signals.filter((signal) => signal.groupName === "trust_builder");
 
   return (
     <main className="min-h-dvh bg-[var(--surface)] px-4 py-6 text-[var(--ink)] sm:px-6 md:py-8">
@@ -87,7 +63,7 @@ export default async function ResultPage({
             className="text-xs font-medium text-[var(--muted)] underline-offset-4 hover:text-[var(--ink)] hover:underline"
             href="/"
           >
-            Otro análisis
+            Otro analisis
           </Link>
         </header>
 
@@ -96,7 +72,7 @@ export default async function ResultPage({
           <div className="space-y-3">
             {result.status === "partial" ? (
               <span className="inline-flex items-center rounded-full border border-[var(--caution-line)] bg-[var(--caution-bg)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--caution-text)]">
-                Análisis parcial
+                Analisis parcial
               </span>
             ) : null}
             <p className="mx-auto max-w-[38ch] text-lg leading-7 font-medium text-[var(--ink)] sm:text-xl sm:leading-8">
@@ -111,15 +87,16 @@ export default async function ResultPage({
         </section>
 
         <RecommendationPanel result={result} />
+        <RiskReasons result={result} />
 
         <div className="grid gap-4 md:grid-cols-2">
-          <ResultBlock title="Señales detectadas">
-            <SignalList signals={result.signals} />
+          <ResultBlock title="Senales detectadas">
+            <SignalList signals={riskSignals} />
           </ResultBlock>
 
-          <ResultBlock title="Qué no hacer">
+          <ResultBlock title="Que no hacer">
             <ul className="space-y-3 text-sm leading-6 text-[var(--ink)]">
-              {avoidActions.map((item) => (
+              {result.actionPlan.avoid.map((item) => (
                 <li className="flex gap-3" key={item}>
                   <span
                     aria-hidden="true"
@@ -132,8 +109,14 @@ export default async function ResultPage({
           </ResultBlock>
         </div>
 
+        {trustSignals.length ? (
+          <ResultBlock title="Datos que reducen incertidumbre">
+            <SignalList signals={trustSignals} />
+          </ResultBlock>
+        ) : null}
+
         {result.externalFindings.length ? (
-          <ResultBlock title="También revisamos">
+          <ResultBlock title="Tambien revisamos">
             <ExternalFindings findings={result.externalFindings} />
           </ResultBlock>
         ) : null}
@@ -149,6 +132,7 @@ export default async function ResultPage({
         ) : null}
 
         <ShareResultActions result={result} />
+        <FollowupQuestions publicId={publicId} questions={result.followupQuestions} />
         <FeedbackForm publicId={publicId} />
 
         <p className="border-t border-[var(--line)] pt-4 text-center text-xs leading-5 text-[var(--muted)]">

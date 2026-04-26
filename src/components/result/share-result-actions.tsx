@@ -7,13 +7,14 @@ import { riskLabels } from "@/lib/copy/es-ar";
 import type { AnalysisResultPayload } from "@/types/analysis";
 
 function buildShareText(result: AnalysisResultPayload) {
-  const recommendations = result.recommendations.slice(0, 3).map((item) => `- ${item}`).join("\n");
+  const steps = result.actionPlan.steps.slice(0, 3).map((item) => `- ${item}`).join("\n");
 
   return [
-    `Estafómetro: ${riskLabels[result.risk.level]}`,
+    `Estafometro: ${riskLabels[result.risk.level]}`,
     result.summary,
-    recommendations ? `\nQué conviene hacer:\n${recommendations}` : "",
-    "\nEs una evaluación orientativa: verificá siempre por canales oficiales antes de pagar o compartir datos.",
+    `\nAccion principal:\n${result.actionPlan.primaryAction}`,
+    steps ? `\nPasos sugeridos:\n${steps}` : "",
+    "\nEs una evaluacion orientativa: verifica siempre por canales oficiales antes de pagar o compartir datos.",
   ]
     .filter(Boolean)
     .join("\n");
@@ -23,9 +24,18 @@ export function ShareResultActions({ result }: { result: AnalysisResultPayload }
   const [status, setStatus] = useState<"idle" | "copied" | "shared" | "error">("idle");
   const shareText = useMemo(() => buildShareText(result), [result]);
 
+  async function trackResultAction(eventType: "result_copied" | "result_shared") {
+    await fetch(`/api/cases/${result.publicId}/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventType }),
+    }).catch(() => undefined);
+  }
+
   async function copyResult() {
     try {
       await navigator.clipboard.writeText(shareText);
+      await trackResultAction("result_copied");
       setStatus("copied");
     } catch {
       setStatus("error");
@@ -40,9 +50,10 @@ export function ShareResultActions({ result }: { result: AnalysisResultPayload }
 
     try {
       await navigator.share({
-        title: "Resultado de Estafómetro",
+        title: "Resultado de Estafometro",
         text: shareText,
       });
+      await trackResultAction("result_shared");
       setStatus("shared");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
@@ -55,7 +66,9 @@ export function ShareResultActions({ result }: { result: AnalysisResultPayload }
   return (
     <section className="border-t border-[var(--line)] pt-6">
       <p className="text-xl font-semibold text-[var(--ink)]">Compartir con alguien de confianza</p>
-      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Podés copiar esta orientación para revisarla con un familiar o persona de confianza.</p>
+      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+        Podes copiar esta orientacion para revisarla con un familiar o persona de confianza.
+      </p>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row">
         <Button type="button" variant="secondary" onClick={() => void copyResult()}>
           Copiar resultado

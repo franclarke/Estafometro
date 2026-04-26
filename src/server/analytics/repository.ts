@@ -20,3 +20,28 @@ export async function trackAnalyticsEvent(input: {
     throw error;
   }
 }
+
+export async function getV2AnalyticsSummary() {
+  const supabase = createServerSupabaseClient();
+  const [funnel, feedback, risk] = await Promise.all([
+    supabase.from("funnel_daily").select("*").limit(14),
+    supabase.from("feedback_quality").select("*").limit(30),
+    supabase.from("risk_distribution").select("*"),
+  ]);
+
+  if (funnel.error) {
+    throw funnel.error;
+  }
+  if (feedback.error) {
+    throw feedback.error;
+  }
+  if (risk.error) {
+    throw risk.error;
+  }
+
+  return {
+    funnelDaily: funnel.data ?? [],
+    feedbackQuality: feedback.data ?? [],
+    riskDistribution: risk.data ?? [],
+  };
+}

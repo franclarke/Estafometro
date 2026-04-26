@@ -17,7 +17,7 @@ export async function POST(
 ) {
   try {
     const { publicId } = await params;
-    analyzeCaseSchema.parse((await request.json().catch(() => ({}))) as unknown);
+    const payload = analyzeCaseSchema.parse((await request.json().catch(() => ({}))) as unknown);
 
     await enforceRateLimit({
       ipHash: getIpHash(request),
@@ -25,7 +25,7 @@ export async function POST(
       maxHits: getServerEnv().RATE_LIMIT_ANALYZE_PER_HOUR,
     });
 
-    const result = await runCaseAnalysis(publicId);
+    const result = await runCaseAnalysis(publicId, { force: payload.force });
     const caseRecord = await getCaseByPublicId(publicId);
     const latestRun = await getLatestAnalysisRun(caseRecord.id);
 
