@@ -12,6 +12,22 @@ import { listCaseSignals } from "@/server/signals/repository";
 import type { AnalysisResultPayload, BehavioralVectors, RiskFactor, RiskTrace } from "@/types/analysis";
 import type { PatternDefinition } from "@/types/patterns";
 
+function dedupeExternalFindings(
+  findings: AnalysisResultPayload["externalFindings"],
+): AnalysisResultPayload["externalFindings"] {
+  const seen = new Set<string>();
+
+  return findings.filter((finding) => {
+    const key = `${finding.type}:${finding.status}:${finding.summary}`;
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
 export async function getCaseResult(publicId: string): Promise<AnalysisResultPayload> {
   if (publicId.startsWith("demo-") || !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return {
@@ -167,11 +183,13 @@ export async function getCaseResult(publicId: string): Promise<AnalysisResultPay
       confidenceReason,
     },
     signals: normalizedSignals,
-    externalFindings: externalChecks.map((item) => ({
-      type: item.type as AnalysisResultPayload["externalFindings"][number]["type"],
-      status: item.status as AnalysisResultPayload["externalFindings"][number]["status"],
-      summary: item.summary,
-    })),
+    externalFindings: dedupeExternalFindings(
+      externalChecks.map((item) => ({
+        type: item.type as AnalysisResultPayload["externalFindings"][number]["type"],
+        status: item.status as AnalysisResultPayload["externalFindings"][number]["status"],
+        summary: item.summary,
+      })),
+    ),
     patternMatches,
     uncertainties,
     recommendations: recommendedActions.length
