@@ -16,8 +16,11 @@ export function ExternalFindings({ findings }: { findings: AnalysisResultPayload
 
   return (
     <ul className="space-y-3">
-      {findings.map((finding) => (
-        <li key={`${finding.type}-${finding.summary}`} className="rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] px-4 py-3">
+      {findings.map((finding, index) => (
+        <li
+          key={`${finding.type}-${finding.summary}-${index}`}
+          className="rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] px-4 py-3"
+        >
           <p className="font-semibold text-[var(--ink)]">{findingLabels[finding.type] ?? "Hallazgo"}</p>
           <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{finding.summary}</p>
         </li>
